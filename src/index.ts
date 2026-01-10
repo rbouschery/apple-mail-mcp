@@ -78,6 +78,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           mailbox: (args?.mailbox as string) || "INBOX",
           limit: (args?.limit as number) || 10,
           includeContent: (args?.includeContent as boolean) || false,
+          unreadOnly: (args?.unreadOnly as boolean) || false,
         });
         return {
           content: [

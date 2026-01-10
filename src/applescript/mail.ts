@@ -116,8 +116,9 @@ export function getEmails(options: {
   mailbox?: string;
   limit?: number;
   includeContent?: boolean;
+  unreadOnly?: boolean;
 }): Email[] {
-  const { account, mailbox = "INBOX", limit = 10, includeContent = false } = options;
+  const { account, mailbox = "INBOX", limit = 10, includeContent = false, unreadOnly = false } = options;
 
   const contentPart = includeContent
     ? `set msgContent to content of msg`
@@ -127,12 +128,17 @@ export function getEmails(options: {
     ? `mailbox "${mailbox}" of account "${account}"`
     : `mailbox "${mailbox}"`;
 
+  // If unreadOnly, filter messages by read status
+  const messageFilter = unreadOnly
+    ? `(messages of theMailbox whose read status is false)`
+    : `messages of theMailbox`;
+
   const script = `
 tell application "Mail"
     set results to ""
     try
         set theMailbox to ${accountPart}
-        set msgList to messages of theMailbox
+        set msgList to ${messageFilter}
         set msgCount to count of msgList
         if msgCount > ${limit} then set msgCount to ${limit}
 

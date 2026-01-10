@@ -160,6 +160,7 @@ Get recent emails from a mailbox.
 | `mailbox` | string | No | "INBOX" | Mailbox name |
 | `limit` | number | No | 10 | Max emails to retrieve |
 | `includeContent` | boolean | No | false | Include email body |
+| `unreadOnly` | boolean | No | false | Only return unread emails |
 
 **Example response:**
 ```json

@@ -50,6 +50,11 @@ export const MAIL_GET_EMAILS: Tool = {
         description: "Whether to include the email body content (default: false)",
         default: false,
       },
+      unreadOnly: {
+        type: "boolean",
+        description: "Only return unread emails (default: false)",
+        default: false,
+      },
     },
     required: [],
   },
