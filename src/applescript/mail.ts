@@ -100,6 +100,9 @@ export interface Email {
   id: number;
   subject: string;
   sender: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
   dateSent: string;
   isRead: boolean;
   content?: string;
@@ -142,7 +145,26 @@ tell application "Mail"
             set msgRead to read status of msg
             ${contentPart}
 
-            set results to results & msgId & "<<>>" & msgSubject & "<<>>" & msgSender & "<<>>" & (msgDate as string) & "<<>>" & msgRead & "<<>>" & msgContent & "|||"
+            -- Get recipients
+            set toList to ""
+            repeat with r in to recipients of msg
+                set toList to toList & address of r & ","
+            end repeat
+            if toList is not "" then set toList to text 1 thru -2 of toList
+
+            set ccList to ""
+            repeat with r in cc recipients of msg
+                set ccList to ccList & address of r & ","
+            end repeat
+            if ccList is not "" then set ccList to text 1 thru -2 of ccList
+
+            set bccList to ""
+            repeat with r in bcc recipients of msg
+                set bccList to bccList & address of r & ","
+            end repeat
+            if bccList is not "" then set bccList to text 1 thru -2 of bccList
+
+            set results to results & msgId & "<<>>" & msgSubject & "<<>>" & msgSender & "<<>>" & toList & "<<>>" & ccList & "<<>>" & bccList & "<<>>" & (msgDate as string) & "<<>>" & msgRead & "<<>>" & msgContent & "|||"
         end repeat
     on error errMsg
         return "ERROR:" & errMsg
@@ -161,11 +183,14 @@ end tell
   const parts = result.split("|||").filter(Boolean);
 
   for (const part of parts) {
-    const [id, subject, sender, dateSent, isRead, content] = part.split("<<>>");
+    const [id, subject, sender, to, cc, bcc, dateSent, isRead, content] = part.split("<<>>");
     emails.push({
       id: parseInt(id) || 0,
       subject: subject || "(No Subject)",
       sender: sender || "(Unknown)",
+      to: to ? to.split(",").map(s => s.trim()).filter(Boolean) : [],
+      cc: cc ? cc.split(",").map(s => s.trim()).filter(Boolean) : [],
+      bcc: bcc ? bcc.split(",").map(s => s.trim()).filter(Boolean) : [],
       dateSent: dateSent || "",
       isRead: isRead === "true",
       content: content || undefined,
@@ -219,7 +244,26 @@ tell application "Mail"
                 set msgDate to date sent of msg
                 set msgRead to read status of msg
 
-                set results to results & msgId & "<<>>" & msgSubject & "<<>>" & msgSender & "<<>>" & (msgDate as string) & "<<>>" & msgRead & "|||"
+                -- Get recipients
+                set toList to ""
+                repeat with r in to recipients of msg
+                    set toList to toList & address of r & ","
+                end repeat
+                if toList is not "" then set toList to text 1 thru -2 of toList
+
+                set ccList to ""
+                repeat with r in cc recipients of msg
+                    set ccList to ccList & address of r & ","
+                end repeat
+                if ccList is not "" then set ccList to text 1 thru -2 of ccList
+
+                set bccList to ""
+                repeat with r in bcc recipients of msg
+                    set bccList to bccList & address of r & ","
+                end repeat
+                if bccList is not "" then set bccList to text 1 thru -2 of bccList
+
+                set results to results & msgId & "<<>>" & msgSubject & "<<>>" & msgSender & "<<>>" & toList & "<<>>" & ccList & "<<>>" & bccList & "<<>>" & (msgDate as string) & "<<>>" & msgRead & "|||"
                 set foundCount to foundCount + 1
             end repeat
         end repeat
@@ -240,11 +284,14 @@ end tell
   const parts = result.split("|||").filter(Boolean);
 
   for (const part of parts) {
-    const [id, subject, sender, dateSent, isRead] = part.split("<<>>");
+    const [id, subject, sender, to, cc, bcc, dateSent, isRead] = part.split("<<>>");
     emails.push({
       id: parseInt(id) || 0,
       subject: subject || "(No Subject)",
       sender: sender || "(Unknown)",
+      to: to ? to.split(",").map(s => s.trim()).filter(Boolean) : [],
+      cc: cc ? cc.split(",").map(s => s.trim()).filter(Boolean) : [],
+      bcc: bcc ? bcc.split(",").map(s => s.trim()).filter(Boolean) : [],
       dateSent: dateSent || "",
       isRead: isRead === "true",
     });

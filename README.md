@@ -169,6 +169,9 @@ Get recent emails from a mailbox.
       "id": 12345,
       "subject": "Meeting tomorrow",
       "sender": "John Doe <john@example.com>",
+      "to": ["you@example.com", "team@example.com"],
+      "cc": ["manager@example.com"],
+      "bcc": [],
       "dateSent": "Monday, 10. January 2025 at 09:30:00",
       "isRead": false
     }
