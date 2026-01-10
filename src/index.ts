@@ -163,6 +163,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           messageId,
           account: args?.account as string | undefined,
           mailbox: (args?.mailbox as string) || "INBOX",
+          archiveMailbox: args?.archiveMailbox as string | undefined,
         });
 
         return {

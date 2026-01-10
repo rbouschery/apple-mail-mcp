@@ -165,6 +165,10 @@ export const MAIL_ARCHIVE: Tool = {
         description: "The name of the mailbox/folder where the email currently is (default: INBOX)",
         default: "INBOX",
       },
+      archiveMailbox: {
+        type: "string",
+        description: "The name of the archive mailbox to move the email to (default: auto-detects 'Archive', 'Archives', or 'All Mail')",
+      },
     },
     required: ["messageId"],
   },

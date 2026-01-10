@@ -362,12 +362,41 @@ export function archiveEmail(options: {
   messageId: number;
   account?: string;
   mailbox?: string;
+  archiveMailbox?: string;
 }): { success: boolean; message: string } {
-  const { messageId, account, mailbox = "INBOX" } = options;
+  const { messageId, account, mailbox = "INBOX", archiveMailbox: customArchiveMailbox } = options;
 
   const accountPart = account
     ? `mailbox "${mailbox}" of account "${account}"`
     : `mailbox "${mailbox}"`;
+
+  // If a custom archive mailbox is specified, use it directly
+  const archiveLogic = customArchiveMailbox
+    ? `
+        set archiveMailbox to missing value
+        repeat with mb in mailboxes of theAccount
+            if name of mb is "${customArchiveMailbox}" then
+                set archiveMailbox to mb
+                exit repeat
+            end if
+        end repeat
+
+        if archiveMailbox is missing value then
+            return "ERROR:Archive mailbox '${customArchiveMailbox}' not found for this account"
+        end if`
+    : `
+        -- Find the Archive mailbox for this account (try common names)
+        set archiveMailbox to missing value
+        repeat with mb in mailboxes of theAccount
+            if name of mb is "Archive" or name of mb is "Archives" or name of mb is "All Mail" then
+                set archiveMailbox to mb
+                exit repeat
+            end if
+        end repeat
+
+        if archiveMailbox is missing value then
+            return "ERROR:No Archive mailbox found for this account. Try specifying archiveMailbox parameter with the exact folder name."
+        end if`;
 
   const script = `
 tell application "Mail"
@@ -375,19 +404,7 @@ tell application "Mail"
         set theMailbox to ${accountPart}
         set theMessage to (first message of theMailbox whose id is ${messageId})
         set theAccount to account of theMailbox
-
-        -- Find the Archive mailbox for this account
-        set archiveMailbox to missing value
-        repeat with mb in mailboxes of theAccount
-            if name of mb is "Archive" or name of mb is "All Mail" then
-                set archiveMailbox to mb
-                exit repeat
-            end if
-        end repeat
-
-        if archiveMailbox is missing value then
-            return "ERROR:No Archive mailbox found for this account"
-        end if
+        ${archiveLogic}
 
         move theMessage to archiveMailbox
         return "Message archived successfully"

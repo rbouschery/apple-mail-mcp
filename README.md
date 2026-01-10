@@ -234,6 +234,7 @@ Archive an email by moving it to the Archive mailbox.
 | `messageId` | number | **Yes** | - | Email ID (from mail_get_emails or mail_search) |
 | `account` | string | No | - | Account name |
 | `mailbox` | string | No | "INBOX" | Current mailbox of the email |
+| `archiveMailbox` | string | No | auto-detect | Name of the archive folder (auto-detects "Archive", "Archives", or "All Mail") |
 
 **Example response:**
 ```json
