@@ -30,7 +30,7 @@ bun install
 ### Using bunx (no installation required)
 
 ```bash
-bunx apple-mail-mcp
+bunx @sempervirens-labs/apple-mail-mcp
 ```
 
 ## Configuration

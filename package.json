@@ -1,5 +1,5 @@
 {
-  "name": "apple-mail-mcp",
+  "name": "@sempervirens-labs/apple-mail-mcp",
   "version": "1.0.0",
   "description": "MCP server for Apple Mail - list accounts, mailboxes, search emails, and send messages",
   "type": "module",
@@ -20,8 +20,16 @@
     "applescript",
     "claude"
   ],
-  "author": "",
+  "author": "Robert Bouschery",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rbouschery/apple-mail-mcp.git"
+  },
+  "homepage": "https://github.com/rbouschery/apple-mail-mcp#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
