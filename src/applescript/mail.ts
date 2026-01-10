@@ -3,7 +3,7 @@ import { execSync } from "child_process";
 /**
  * Execute an AppleScript and return the result
  */
-export function runAppleScript(script: string): string {
+export function runAppleScript(script: string, timeoutMs: number = 30000): string {
   try {
     // Use osascript with heredoc to handle complex scripts
     const result = execSync(`osascript <<'APPLESCRIPT'
@@ -11,6 +11,7 @@ ${script}
 APPLESCRIPT`, {
       encoding: "utf-8",
       maxBuffer: 10 * 1024 * 1024, // 10MB buffer for large results
+      timeout: timeoutMs,
     });
     return result.trim();
   } catch (error: any) {
@@ -655,6 +656,9 @@ export function createDraftReply(options: {
 
   const replyCommand = replyAll ? "reply theMessage with opening window and reply to all" : "reply theMessage with opening window";
 
+  // Escape the body for AppleScript - handle quotes and newlines
+  const escapedBody = body.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '" & return & "');
+
   const script = `
 tell application "Mail"
     try
@@ -663,9 +667,8 @@ tell application "Mail"
 
         set replyMessage to ${replyCommand}
 
-        -- Prepend the new body to the reply
-        set currentContent to content of replyMessage
-        set content of replyMessage to "${body.replace(/"/g, '\\"').replace(/\n/g, "\\n")}" & return & return & currentContent
+        -- Set the reply body content (the quoted original will appear below in the compose window)
+        set content of replyMessage to "${escapedBody}"
 
         return "Draft reply created successfully"
     on error errMsg
@@ -675,7 +678,8 @@ end tell
 `;
 
   try {
-    const result = runAppleScript(script);
+    // Use longer timeout for reply operations as they can be slow
+    const result = runAppleScript(script, 60000);
     if (result.startsWith("ERROR:")) {
       return { success: false, message: result.substring(6) };
     }
