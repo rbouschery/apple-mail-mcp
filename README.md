@@ -10,6 +10,11 @@ An MCP (Model Context Protocol) server for Apple Mail on macOS. Allows AI assist
 - **Search Emails** - Search by subject, sender, or content
 - **Unread Count** - Get unread email counts
 - **Send Email** - Compose and send emails with CC/BCC support
+- **Archive Email** - Move emails to the Archive mailbox
+- **Delete Email** - Move emails to Trash
+- **Mark as Read/Unread** - Change read status of emails
+- **Create Draft** - Create new draft emails
+- **Create Draft Reply** - Create draft replies to existing emails
 
 ## Requirements
 
@@ -19,18 +24,22 @@ An MCP (Model Context Protocol) server for Apple Mail on macOS. Allows AI assist
 
 ## Installation
 
+### From npm (Recommended)
+
+```bash
+# Install globally
+bun add -g @sempervirens-labs/apple-mail-mcp
+
+# Or run directly without installation
+bunx @sempervirens-labs/apple-mail-mcp
+```
+
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/apple-mail-mcp.git
+git clone https://github.com/rbouschery/apple-mail-mcp.git
 cd apple-mail-mcp
 bun install
-```
-
-### Using bunx (no installation required)
-
-```bash
-bunx @sempervirens-labs/apple-mail-mcp
 ```
 
 ## Configuration
@@ -43,21 +52,21 @@ Add to your `~/.claude/settings.json`:
 {
   "mcpServers": {
     "apple-mail": {
-      "command": "bun",
-      "args": ["run", "/path/to/apple-mail-mcp/src/index.ts"]
+      "command": "bunx",
+      "args": ["@sempervirens-labs/apple-mail-mcp"]
     }
   }
 }
 ```
 
-Or if published to npm:
+Or if running from source:
 
 ```json
 {
   "mcpServers": {
     "apple-mail": {
-      "command": "bunx",
-      "args": ["apple-mail-mcp"]
+      "command": "bun",
+      "args": ["run", "/path/to/apple-mail-mcp/src/index.ts"]
     }
   }
 }
@@ -73,8 +82,8 @@ Add to your Cursor MCP settings (Settings > MCP Servers):
 {
   "mcpServers": {
     "apple-mail": {
-      "command": "bun",
-      "args": ["run", "/path/to/apple-mail-mcp/src/index.ts"]
+      "command": "bunx",
+      "args": ["@sempervirens-labs/apple-mail-mcp"]
     }
   }
 }
@@ -86,8 +95,8 @@ Or via Cursor's settings UI:
 3. Click "Add Server"
 4. Enter:
    - **Name**: `apple-mail`
-   - **Command**: `bun`
-   - **Arguments**: `run`, `/path/to/apple-mail-mcp/src/index.ts`
+   - **Command**: `bunx`
+   - **Arguments**: `@sempervirens-labs/apple-mail-mcp`
 
 ### Claude Desktop
 
@@ -97,8 +106,8 @@ Add to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "apple-mail": {
-      "command": "bun",
-      "args": ["run", "/path/to/apple-mail-mcp/src/index.ts"]
+      "command": "bunx",
+      "args": ["@sempervirens-labs/apple-mail-mcp"]
     }
   }
 }
@@ -213,6 +222,119 @@ Send an email using Apple Mail.
 {
   "success": true,
   "message": "Message sent successfully"
+}
+```
+
+### `mail_archive`
+
+Archive an email by moving it to the Archive mailbox.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `messageId` | number | **Yes** | - | Email ID (from mail_get_emails or mail_search) |
+| `account` | string | No | - | Account name |
+| `mailbox` | string | No | "INBOX" | Current mailbox of the email |
+
+**Example response:**
+```json
+{
+  "success": true,
+  "message": "Message archived successfully"
+}
+```
+
+### `mail_delete`
+
+Delete an email by moving it to Trash.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `messageId` | number | **Yes** | - | Email ID (from mail_get_emails or mail_search) |
+| `account` | string | No | - | Account name |
+| `mailbox` | string | No | "INBOX" | Current mailbox of the email |
+
+**Example response:**
+```json
+{
+  "success": true,
+  "message": "Message deleted successfully"
+}
+```
+
+### `mail_mark_read`
+
+Mark an email as read.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `messageId` | number | **Yes** | - | Email ID (from mail_get_emails or mail_search) |
+| `account` | string | No | - | Account name |
+| `mailbox` | string | No | "INBOX" | Mailbox where the email is located |
+
+**Example response:**
+```json
+{
+  "success": true,
+  "message": "Message marked as read"
+}
+```
+
+### `mail_mark_unread`
+
+Mark an email as unread.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `messageId` | number | **Yes** | - | Email ID (from mail_get_emails or mail_search) |
+| `account` | string | No | - | Account name |
+| `mailbox` | string | No | "INBOX" | Mailbox where the email is located |
+
+**Example response:**
+```json
+{
+  "success": true,
+  "message": "Message marked as unread"
+}
+```
+
+### `mail_create_draft`
+
+Create a new draft email.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `to` | string or string[] | No | Recipient email(s) |
+| `subject` | string | **Yes** | Email subject |
+| `body` | string | **Yes** | Email body |
+| `cc` | string or string[] | No | CC recipient(s) |
+| `bcc` | string or string[] | No | BCC recipient(s) |
+| `from` | string | No | Sender (must be configured account) |
+
+**Example response:**
+```json
+{
+  "success": true,
+  "message": "Draft created successfully"
+}
+```
+
+### `mail_create_draft_reply`
+
+Create a draft reply to an existing email.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `messageId` | number | **Yes** | - | Email ID to reply to (from mail_get_emails or mail_search) |
+| `body` | string | **Yes** | - | Reply body content |
+| `replyAll` | boolean | No | false | Reply to all recipients |
+| `account` | string | No | - | Account name |
+| `mailbox` | string | No | "INBOX" | Mailbox where the original email is located |
+
+**Example response:**
+```json
+{
+  "success": true,
+  "message": "Draft reply created successfully"
 }
 ```
 

@@ -354,3 +354,263 @@ end tell
     return { success: false, message: error.message };
   }
 }
+
+/**
+ * Archive an email by moving it to the Archive mailbox
+ */
+export function archiveEmail(options: {
+  messageId: number;
+  account?: string;
+  mailbox?: string;
+}): { success: boolean; message: string } {
+  const { messageId, account, mailbox = "INBOX" } = options;
+
+  const accountPart = account
+    ? `mailbox "${mailbox}" of account "${account}"`
+    : `mailbox "${mailbox}"`;
+
+  const script = `
+tell application "Mail"
+    try
+        set theMailbox to ${accountPart}
+        set theMessage to (first message of theMailbox whose id is ${messageId})
+        set theAccount to account of theMailbox
+
+        -- Find the Archive mailbox for this account
+        set archiveMailbox to missing value
+        repeat with mb in mailboxes of theAccount
+            if name of mb is "Archive" or name of mb is "All Mail" then
+                set archiveMailbox to mb
+                exit repeat
+            end if
+        end repeat
+
+        if archiveMailbox is missing value then
+            return "ERROR:No Archive mailbox found for this account"
+        end if
+
+        move theMessage to archiveMailbox
+        return "Message archived successfully"
+    on error errMsg
+        return "ERROR:" & errMsg
+    end try
+end tell
+`;
+
+  try {
+    const result = runAppleScript(script);
+    if (result.startsWith("ERROR:")) {
+      return { success: false, message: result.substring(6) };
+    }
+    return { success: true, message: result || "Message archived successfully" };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Delete an email by moving it to the Trash mailbox
+ */
+export function deleteEmail(options: {
+  messageId: number;
+  account?: string;
+  mailbox?: string;
+}): { success: boolean; message: string } {
+  const { messageId, account, mailbox = "INBOX" } = options;
+
+  const accountPart = account
+    ? `mailbox "${mailbox}" of account "${account}"`
+    : `mailbox "${mailbox}"`;
+
+  const script = `
+tell application "Mail"
+    try
+        set theMailbox to ${accountPart}
+        set theMessage to (first message of theMailbox whose id is ${messageId})
+        delete theMessage
+        return "Message deleted successfully"
+    on error errMsg
+        return "ERROR:" & errMsg
+    end try
+end tell
+`;
+
+  try {
+    const result = runAppleScript(script);
+    if (result.startsWith("ERROR:")) {
+      return { success: false, message: result.substring(6) };
+    }
+    return { success: true, message: result || "Message deleted successfully" };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Mark an email as read
+ */
+export function markAsRead(options: {
+  messageId: number;
+  account?: string;
+  mailbox?: string;
+}): { success: boolean; message: string } {
+  const { messageId, account, mailbox = "INBOX" } = options;
+
+  const accountPart = account
+    ? `mailbox "${mailbox}" of account "${account}"`
+    : `mailbox "${mailbox}"`;
+
+  const script = `
+tell application "Mail"
+    try
+        set theMailbox to ${accountPart}
+        set theMessage to (first message of theMailbox whose id is ${messageId})
+        set read status of theMessage to true
+        return "Message marked as read"
+    on error errMsg
+        return "ERROR:" & errMsg
+    end try
+end tell
+`;
+
+  try {
+    const result = runAppleScript(script);
+    if (result.startsWith("ERROR:")) {
+      return { success: false, message: result.substring(6) };
+    }
+    return { success: true, message: result || "Message marked as read" };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Mark an email as unread
+ */
+export function markAsUnread(options: {
+  messageId: number;
+  account?: string;
+  mailbox?: string;
+}): { success: boolean; message: string } {
+  const { messageId, account, mailbox = "INBOX" } = options;
+
+  const accountPart = account
+    ? `mailbox "${mailbox}" of account "${account}"`
+    : `mailbox "${mailbox}"`;
+
+  const script = `
+tell application "Mail"
+    try
+        set theMailbox to ${accountPart}
+        set theMessage to (first message of theMailbox whose id is ${messageId})
+        set read status of theMessage to false
+        return "Message marked as unread"
+    on error errMsg
+        return "ERROR:" & errMsg
+    end try
+end tell
+`;
+
+  try {
+    const result = runAppleScript(script);
+    if (result.startsWith("ERROR:")) {
+      return { success: false, message: result.substring(6) };
+    }
+    return { success: true, message: result || "Message marked as unread" };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Create a draft email
+ */
+export function createDraft(options: {
+  to?: string | string[];
+  subject: string;
+  body: string;
+  cc?: string | string[];
+  bcc?: string | string[];
+  from?: string;
+}): { success: boolean; message: string } {
+  const { to, subject, body, cc, bcc, from } = options;
+
+  const toList = to ? (Array.isArray(to) ? to : [to]) : [];
+  const ccList = cc ? (Array.isArray(cc) ? cc : [cc]) : [];
+  const bccList = bcc ? (Array.isArray(bcc) ? bcc : [bcc]) : [];
+
+  // Build recipient parts
+  const toRecipients = toList.map(addr => `make new to recipient at end of to recipients with properties {address:"${addr}"}`).join("\n            ");
+  const ccRecipients = ccList.map(addr => `make new cc recipient at end of cc recipients with properties {address:"${addr}"}`).join("\n            ");
+  const bccRecipients = bccList.map(addr => `make new bcc recipient at end of bcc recipients with properties {address:"${addr}"}`).join("\n            ");
+
+  const fromPart = from ? `, sender:"${from}"` : "";
+
+  const script = `
+tell application "Mail"
+    set newMessage to make new outgoing message with properties {subject:"${subject.replace(/"/g, '\\"')}", content:"${body.replace(/"/g, '\\"').replace(/\n/g, "\\n")}", visible:true${fromPart}}
+    tell newMessage
+        ${toRecipients}
+        ${ccRecipients ? ccRecipients : ""}
+        ${bccRecipients ? bccRecipients : ""}
+    end tell
+    -- Save as draft by not sending, just leaving it open
+    return "Draft created successfully"
+end tell
+`;
+
+  try {
+    const result = runAppleScript(script);
+    return { success: true, message: result || "Draft created successfully" };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Create a draft reply to an existing email
+ */
+export function createDraftReply(options: {
+  messageId: number;
+  body: string;
+  replyAll?: boolean;
+  account?: string;
+  mailbox?: string;
+}): { success: boolean; message: string } {
+  const { messageId, body, replyAll = false, account, mailbox = "INBOX" } = options;
+
+  const accountPart = account
+    ? `mailbox "${mailbox}" of account "${account}"`
+    : `mailbox "${mailbox}"`;
+
+  const replyCommand = replyAll ? "reply theMessage with opening window and reply to all" : "reply theMessage with opening window";
+
+  const script = `
+tell application "Mail"
+    try
+        set theMailbox to ${accountPart}
+        set theMessage to (first message of theMailbox whose id is ${messageId})
+
+        set replyMessage to ${replyCommand}
+
+        -- Prepend the new body to the reply
+        set currentContent to content of replyMessage
+        set content of replyMessage to "${body.replace(/"/g, '\\"').replace(/\n/g, "\\n")}" & return & return & currentContent
+
+        return "Draft reply created successfully"
+    on error errMsg
+        return "ERROR:" & errMsg
+    end try
+end tell
+`;
+
+  try {
+    const result = runAppleScript(script);
+    if (result.startsWith("ERROR:")) {
+      return { success: false, message: result.substring(6) };
+    }
+    return { success: true, message: result || "Draft reply created successfully" };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}

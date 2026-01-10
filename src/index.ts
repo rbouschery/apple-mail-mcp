@@ -15,6 +15,12 @@ import {
   searchEmails,
   getUnreadCount,
   sendEmail,
+  archiveEmail,
+  deleteEmail,
+  markAsRead,
+  markAsUnread,
+  createDraft,
+  createDraftReply,
 } from "./applescript/mail.js";
 
 // Create MCP server
@@ -135,6 +141,147 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           cc: args?.cc as string | string[] | undefined,
           bcc: args?.bcc as string | string[] | undefined,
           from: args?.from as string | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "mail_archive": {
+        const messageId = args?.messageId as number;
+        if (!messageId) {
+          throw new Error("Required field: messageId");
+        }
+
+        const result = archiveEmail({
+          messageId,
+          account: args?.account as string | undefined,
+          mailbox: (args?.mailbox as string) || "INBOX",
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "mail_delete": {
+        const messageId = args?.messageId as number;
+        if (!messageId) {
+          throw new Error("Required field: messageId");
+        }
+
+        const result = deleteEmail({
+          messageId,
+          account: args?.account as string | undefined,
+          mailbox: (args?.mailbox as string) || "INBOX",
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "mail_mark_read": {
+        const messageId = args?.messageId as number;
+        if (!messageId) {
+          throw new Error("Required field: messageId");
+        }
+
+        const result = markAsRead({
+          messageId,
+          account: args?.account as string | undefined,
+          mailbox: (args?.mailbox as string) || "INBOX",
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "mail_mark_unread": {
+        const messageId = args?.messageId as number;
+        if (!messageId) {
+          throw new Error("Required field: messageId");
+        }
+
+        const result = markAsUnread({
+          messageId,
+          account: args?.account as string | undefined,
+          mailbox: (args?.mailbox as string) || "INBOX",
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "mail_create_draft": {
+        const subject = args?.subject as string;
+        const body = args?.body as string;
+
+        if (!subject || !body) {
+          throw new Error("Required fields: subject, body");
+        }
+
+        const result = createDraft({
+          to: args?.to as string | string[] | undefined,
+          subject,
+          body,
+          cc: args?.cc as string | string[] | undefined,
+          bcc: args?.bcc as string | string[] | undefined,
+          from: args?.from as string | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "mail_create_draft_reply": {
+        const messageId = args?.messageId as number;
+        const body = args?.body as string;
+
+        if (!messageId || !body) {
+          throw new Error("Required fields: messageId, body");
+        }
+
+        const result = createDraftReply({
+          messageId,
+          body,
+          replyAll: (args?.replyAll as boolean) || false,
+          account: args?.account as string | undefined,
+          mailbox: (args?.mailbox as string) || "INBOX",
         });
 
         return {

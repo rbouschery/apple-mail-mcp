@@ -146,6 +146,179 @@ export const MAIL_SEND: Tool = {
   },
 };
 
+export const MAIL_ARCHIVE: Tool = {
+  name: "mail_archive",
+  description: "Archive an email in Apple Mail by moving it to the Archive mailbox",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageId: {
+        type: "number",
+        description: "The ID of the email message to archive (obtained from mail_get_emails or mail_search)",
+      },
+      account: {
+        type: "string",
+        description: "The name of the email account",
+      },
+      mailbox: {
+        type: "string",
+        description: "The name of the mailbox/folder where the email currently is (default: INBOX)",
+        default: "INBOX",
+      },
+    },
+    required: ["messageId"],
+  },
+};
+
+export const MAIL_DELETE: Tool = {
+  name: "mail_delete",
+  description: "Delete an email in Apple Mail by moving it to the Trash mailbox",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageId: {
+        type: "number",
+        description: "The ID of the email message to delete (obtained from mail_get_emails or mail_search)",
+      },
+      account: {
+        type: "string",
+        description: "The name of the email account",
+      },
+      mailbox: {
+        type: "string",
+        description: "The name of the mailbox/folder where the email currently is (default: INBOX)",
+        default: "INBOX",
+      },
+    },
+    required: ["messageId"],
+  },
+};
+
+export const MAIL_MARK_READ: Tool = {
+  name: "mail_mark_read",
+  description: "Mark an email as read in Apple Mail",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageId: {
+        type: "number",
+        description: "The ID of the email message to mark as read (obtained from mail_get_emails or mail_search)",
+      },
+      account: {
+        type: "string",
+        description: "The name of the email account",
+      },
+      mailbox: {
+        type: "string",
+        description: "The name of the mailbox/folder where the email is (default: INBOX)",
+        default: "INBOX",
+      },
+    },
+    required: ["messageId"],
+  },
+};
+
+export const MAIL_MARK_UNREAD: Tool = {
+  name: "mail_mark_unread",
+  description: "Mark an email as unread in Apple Mail",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageId: {
+        type: "number",
+        description: "The ID of the email message to mark as unread (obtained from mail_get_emails or mail_search)",
+      },
+      account: {
+        type: "string",
+        description: "The name of the email account",
+      },
+      mailbox: {
+        type: "string",
+        description: "The name of the mailbox/folder where the email is (default: INBOX)",
+        default: "INBOX",
+      },
+    },
+    required: ["messageId"],
+  },
+};
+
+export const MAIL_CREATE_DRAFT: Tool = {
+  name: "mail_create_draft",
+  description: "Create a new draft email in Apple Mail",
+  inputSchema: {
+    type: "object",
+    properties: {
+      to: {
+        oneOf: [
+          { type: "string" },
+          { type: "array", items: { type: "string" } },
+        ],
+        description: "Email address(es) of the recipient(s)",
+      },
+      subject: {
+        type: "string",
+        description: "The email subject line",
+      },
+      body: {
+        type: "string",
+        description: "The email body content",
+      },
+      cc: {
+        oneOf: [
+          { type: "string" },
+          { type: "array", items: { type: "string" } },
+        ],
+        description: "Email address(es) for CC recipients",
+      },
+      bcc: {
+        oneOf: [
+          { type: "string" },
+          { type: "array", items: { type: "string" } },
+        ],
+        description: "Email address(es) for BCC recipients",
+      },
+      from: {
+        type: "string",
+        description: "The sender email address (must be a configured account)",
+      },
+    },
+    required: ["subject", "body"],
+  },
+};
+
+export const MAIL_CREATE_DRAFT_REPLY: Tool = {
+  name: "mail_create_draft_reply",
+  description: "Create a draft reply to an existing email in Apple Mail",
+  inputSchema: {
+    type: "object",
+    properties: {
+      messageId: {
+        type: "number",
+        description: "The ID of the email message to reply to (obtained from mail_get_emails or mail_search)",
+      },
+      body: {
+        type: "string",
+        description: "The reply body content",
+      },
+      replyAll: {
+        type: "boolean",
+        description: "Whether to reply to all recipients (default: false)",
+        default: false,
+      },
+      account: {
+        type: "string",
+        description: "The name of the email account",
+      },
+      mailbox: {
+        type: "string",
+        description: "The name of the mailbox/folder where the original email is (default: INBOX)",
+        default: "INBOX",
+      },
+    },
+    required: ["messageId", "body"],
+  },
+};
+
 export const tools: Tool[] = [
   MAIL_LIST_ACCOUNTS,
   MAIL_LIST_MAILBOXES,
@@ -153,4 +326,10 @@ export const tools: Tool[] = [
   MAIL_SEARCH,
   MAIL_GET_UNREAD_COUNT,
   MAIL_SEND,
+  MAIL_ARCHIVE,
+  MAIL_DELETE,
+  MAIL_MARK_READ,
+  MAIL_MARK_UNREAD,
+  MAIL_CREATE_DRAFT,
+  MAIL_CREATE_DRAFT_REPLY,
 ];
