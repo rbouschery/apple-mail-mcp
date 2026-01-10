@@ -1,0 +1,35 @@
+{
+  "name": "apple-mail-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Apple Mail - list accounts, mailboxes, search emails, and send messages",
+  "type": "module",
+  "main": "src/index.ts",
+  "bin": {
+    "apple-mail-mcp": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "apple",
+    "mail",
+    "email",
+    "macos",
+    "applescript",
+    "claude"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
