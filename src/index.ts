@@ -12,6 +12,7 @@ import {
   listAccounts,
   listMailboxes,
   getEmails,
+  getEmailsByIds,
   searchEmails,
   getUnreadCount,
   sendEmail,
@@ -85,6 +86,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: JSON.stringify({ emails, count: emails.length }, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "mail_get_emails_by_ids": {
+        const ids = args?.ids as number[];
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+          throw new Error("Required field: ids (must be a non-empty array of email IDs)");
+        }
+        const emails = getEmailsByIds({
+          ids,
+          account: args?.account as string | undefined,
+          mailbox: (args?.mailbox as string) || "INBOX",
+          includeContent: (args?.includeContent as boolean) ?? true,
+        });
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ emails, count: emails.length, requestedIds: ids }, null, 2),
             },
           ],
         };

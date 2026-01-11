@@ -60,6 +60,38 @@ export const MAIL_GET_EMAILS: Tool = {
   },
 };
 
+export const MAIL_GET_EMAILS_BY_IDS: Tool = {
+  name: "mail_get_emails_by_ids",
+  description: "Get specific emails by their IDs in Apple Mail. Use this to retrieve full details of specific emails after browsing with mail_get_emails (includeContent: false).",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ids: {
+        type: "array",
+        items: {
+          type: "number",
+        },
+        description: "Array of email IDs to retrieve (obtained from mail_get_emails or mail_search)",
+      },
+      account: {
+        type: "string",
+        description: "The name of the email account (helps optimize search)",
+      },
+      mailbox: {
+        type: "string",
+        description: "The name of the mailbox/folder where the emails are located (default: INBOX, helps optimize search)",
+        default: "INBOX",
+      },
+      includeContent: {
+        type: "boolean",
+        description: "Whether to include the email body content (default: true)",
+        default: true,
+      },
+    },
+    required: ["ids"],
+  },
+};
+
 export const MAIL_SEARCH: Tool = {
   name: "mail_search",
   description: "Search emails in Apple Mail by subject, sender, or content",
@@ -332,6 +364,7 @@ export const tools: Tool[] = [
   MAIL_LIST_ACCOUNTS,
   MAIL_LIST_MAILBOXES,
   MAIL_GET_EMAILS,
+  MAIL_GET_EMAILS_BY_IDS,
   MAIL_SEARCH,
   MAIL_GET_UNREAD_COUNT,
   MAIL_SEND,

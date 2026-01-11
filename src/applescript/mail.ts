@@ -208,6 +208,108 @@ end tell
 }
 
 /**
+ * Get specific emails by their IDs
+ */
+export function getEmailsByIds(options: {
+  ids: number[];
+  account?: string;
+  mailbox?: string;
+  includeContent?: boolean;
+}): Email[] {
+  const { ids, account, mailbox = "INBOX", includeContent = true } = options;
+
+  if (!ids || ids.length === 0) {
+    return [];
+  }
+
+  const contentPart = includeContent
+    ? `set msgContent to content of msg`
+    : `set msgContent to ""`;
+
+  const accountPart = account
+    ? `mailbox "${mailbox}" of account "${account}"`
+    : `mailbox "${mailbox}"`;
+
+  // Build the ID list for AppleScript
+  const idList = ids.join(", ");
+
+  const script = `
+tell application "Mail"
+    set results to ""
+    set targetIds to {${idList}}
+    try
+        set theMailbox to ${accountPart}
+        set allMessages to messages of theMailbox
+
+        repeat with targetId in targetIds
+            repeat with msg in allMessages
+                if id of msg is targetId then
+                    set msgId to id of msg
+                    set msgSubject to subject of msg
+                    set msgSender to sender of msg
+                    set msgDate to date sent of msg
+                    set msgRead to read status of msg
+                    ${contentPart}
+
+                    -- Get recipients
+                    set toList to ""
+                    repeat with r in to recipients of msg
+                        set toList to toList & address of r & ","
+                    end repeat
+                    if toList is not "" then set toList to text 1 thru -2 of toList
+
+                    set ccList to ""
+                    repeat with r in cc recipients of msg
+                        set ccList to ccList & address of r & ","
+                    end repeat
+                    if ccList is not "" then set ccList to text 1 thru -2 of ccList
+
+                    set bccList to ""
+                    repeat with r in bcc recipients of msg
+                        set bccList to bccList & address of r & ","
+                    end repeat
+                    if bccList is not "" then set bccList to text 1 thru -2 of bccList
+
+                    set results to results & msgId & "<<>>" & msgSubject & "<<>>" & msgSender & "<<>>" & toList & "<<>>" & ccList & "<<>>" & bccList & "<<>>" & (msgDate as string) & "<<>>" & msgRead & "<<>>" & msgContent & "|||"
+                    exit repeat -- Found the message, move to next ID
+                end if
+            end repeat
+        end repeat
+    on error errMsg
+        return "ERROR:" & errMsg
+    end try
+    return results
+end tell
+`;
+
+  const result = runAppleScript(script);
+
+  if (result.startsWith("ERROR:")) {
+    throw new Error(result.substring(6));
+  }
+
+  const emails: Email[] = [];
+  const parts = result.split("|||").filter(Boolean);
+
+  for (const part of parts) {
+    const [id, subject, sender, to, cc, bcc, dateSent, isRead, content] = part.split("<<>>");
+    emails.push({
+      id: parseInt(id) || 0,
+      subject: subject || "(No Subject)",
+      sender: sender || "(Unknown)",
+      to: to ? to.split(",").map(s => s.trim()).filter(Boolean) : [],
+      cc: cc ? cc.split(",").map(s => s.trim()).filter(Boolean) : [],
+      bcc: bcc ? bcc.split(",").map(s => s.trim()).filter(Boolean) : [],
+      dateSent: dateSent || "",
+      isRead: isRead === "true",
+      content: content || undefined,
+    });
+  }
+
+  return emails;
+}
+
+/**
  * Search emails by query
  */
 export function searchEmails(options: {

@@ -181,6 +181,57 @@ Get recent emails from a mailbox.
 }
 ```
 
+### `mail_get_emails_by_ids`
+
+Get specific emails by their IDs. Useful for retrieving full details of specific emails after browsing with `mail_get_emails` (with `includeContent: false`).
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `ids` | number[] | **Yes** | - | Array of email IDs to retrieve |
+| `account` | string | No | - | Account name (helps optimize search) |
+| `mailbox` | string | No | "INBOX" | Mailbox name (helps optimize search) |
+| `includeContent` | boolean | No | true | Include email body |
+
+**Example usage:**
+```json
+{
+  "ids": [12345, 67890],
+  "includeContent": true
+}
+```
+
+**Example response:**
+```json
+{
+  "emails": [
+    {
+      "id": 12345,
+      "subject": "Meeting tomorrow",
+      "sender": "John Doe <john@example.com>",
+      "to": ["you@example.com"],
+      "cc": [],
+      "bcc": [],
+      "dateSent": "Monday, 10. January 2025 at 09:30:00",
+      "isRead": false,
+      "content": "Let's meet at 2pm to discuss the project..."
+    },
+    {
+      "id": 67890,
+      "subject": "Project update",
+      "sender": "Jane Smith <jane@example.com>",
+      "to": ["you@example.com"],
+      "cc": [],
+      "bcc": [],
+      "dateSent": "Tuesday, 11. January 2025 at 14:15:00",
+      "isRead": true,
+      "content": "The project is progressing well..."
+    }
+  ],
+  "count": 2,
+  "requestedIds": [12345, 67890]
+}
+```
+
 ### `mail_search`
 
 Search emails by subject, sender, or content.
