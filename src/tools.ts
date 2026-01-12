@@ -360,6 +360,16 @@ export const MAIL_CREATE_DRAFT_REPLY: Tool = {
   },
 };
 
+export const MAIL_SEND_DRAFT: Tool = {
+  name: "mail_send_draft",
+  description: "Send the front-most draft (compose window) in Apple Mail. Use this after creating a draft with mail_create_draft or mail_create_draft_reply.",
+  inputSchema: {
+    type: "object",
+    properties: {},
+    required: [],
+  },
+};
+
 export const tools: Tool[] = [
   MAIL_LIST_ACCOUNTS,
   MAIL_LIST_MAILBOXES,
@@ -374,4 +384,5 @@ export const tools: Tool[] = [
   MAIL_MARK_UNREAD,
   MAIL_CREATE_DRAFT,
   MAIL_CREATE_DRAFT_REPLY,
+  MAIL_SEND_DRAFT,
 ];

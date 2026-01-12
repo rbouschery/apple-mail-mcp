@@ -22,6 +22,7 @@ import {
   markAsUnread,
   createDraft,
   createDraftReply,
+  sendDraft,
 } from "./applescript/mail.js";
 
 // Create MCP server
@@ -307,6 +308,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           account: args?.account as string | undefined,
           mailbox: (args?.mailbox as string) || "INBOX",
         });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case "mail_send_draft": {
+        const result = sendDraft();
 
         return {
           content: [

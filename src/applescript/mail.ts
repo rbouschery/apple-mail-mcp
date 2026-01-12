@@ -790,3 +790,36 @@ end tell
     return { success: false, message: error.message };
   }
 }
+
+/**
+ * Send the front-most draft (outgoing message) in Apple Mail
+ */
+export function sendDraft(): { success: boolean; message: string } {
+  const script = `
+tell application "Mail"
+    try
+        set outgoingCount to count of outgoing messages
+        if outgoingCount is 0 then
+            return "ERROR:No draft message found. Create a draft first using mail_create_draft or mail_create_draft_reply."
+        end if
+
+        set theDraft to outgoing message 1
+        send theDraft
+
+        return "Draft sent successfully"
+    on error errMsg
+        return "ERROR:" & errMsg
+    end try
+end tell
+`;
+
+  try {
+    const result = runAppleScript(script, 30000);
+    if (result.startsWith("ERROR:")) {
+      return { success: false, message: result.substring(6) };
+    }
+    return { success: true, message: result || "Draft sent successfully" };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
