@@ -1,5 +1,7 @@
 # Apple Mail MCP
 
+> **Native Agent Skill Available:** This MCP is also available as a native Agent Skill compatible with Claude Code, Cursor, Gemini CLI, and Codex. You can find it here: [Marketplace](https://github.com/rbouschery/marketplace/tree/main/plugins/apple-mail).
+
 An MCP (Model Context Protocol) server for Apple Mail on macOS. Allows AI assistants like Claude to read, search, and send emails through Apple Mail.
 
 ## Features
